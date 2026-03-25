@@ -51,6 +51,80 @@
       <div class="main-scroll" id="apply-scroll">
       <div id="form-error" class="alert alert--error hidden" role="alert"></div>
 
+      <section id="form-type-selector" class="card" style="margin-bottom: 1.5rem;">
+        <h2 class="card__title">Choose Application Format</h2>
+        <p class="page-desc" style="margin-bottom: 1rem;">Select how you want to submit your leave application:</p>
+        <div class="btn-row" style="gap: 1rem;">
+          <button type="button" id="btn-formal-letter" class="btn btn--primary" data-form-type="formal-letter">
+            📄 Formal Letter to Warden
+          </button>
+          <button type="button" id="btn-digital-pass" class="btn btn--secondary" data-form-type="digital-pass">
+            🎫 Digital Pass (Existing Format)
+          </button>
+        </div>
+      </section>
+
+      <!-- Formal Letter Form -->
+      <section id="formal-letter-card" class="card hidden">
+        <h2 class="card__title">Hostel Leave Application Letter</h2>
+        <form id="formal-letter-form" novalidate>
+          <div class="form-grid">
+            <div class="form-group form-group--full">
+              <label for="hostelName">Hostel Name/Block</label>
+              <input id="hostelName" name="hostelName" type="text" placeholder="e.g., Blue Bells Residency, Block B" required />
+            </div>
+            <div class="form-group">
+              <label for="letterDate">Date</label>
+              <input id="letterDate" name="letterDate" type="date" required />
+            </div>
+            <div class="form-group">
+              <label for="formalStartDate">From Date/Time</label>
+              <input id="formalStartDate" name="formalStartDate" type="datetime-local" required />
+            </div>
+            <div class="form-group">
+              <label for="formalEndDate">Return Date/Time</label>
+              <input id="formalEndDate" name="formalEndDate" type="datetime-local" required />
+            </div>
+            <div class="form-group form-group--full">
+              <label for="leaveReasonLetter">Reason for Leave</label>
+              <textarea id="leaveReasonLetter" name="leaveReasonLetter" required placeholder="e.g., to visit my hometown for a festival / to attend a family wedding / for a medical appointment"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="letterStudentPhone">Your Mobile Number</label>
+              <input id="letterStudentPhone" name="letterStudentPhone" type="tel" inputmode="tel" pattern="[0-9]{10}" placeholder="10-digit phone number" required />
+            </div>
+            <div class="form-group">
+              <label for="letterParentPhone">Parent's Phone Number</label>
+              <input id="letterParentPhone" name="letterParentPhone" type="tel" inputmode="tel" pattern="[0-9]{10}" placeholder="10-digit phone number" required />
+            </div>
+            <div class="form-group">
+              <label for="letterStudentName">Your Name</label>
+              <input id="letterStudentName" name="letterStudentName" type="text" required />
+            </div>
+            <div class="form-group">
+              <label for="letterRoomNumber">Room Number</label>
+              <input id="letterRoomNumber" name="letterRoomNumber" type="text" required />
+            </div>
+            <div class="form-group">
+              <label for="letterStudentId">Student ID</label>
+              <input id="letterStudentId" name="letterStudentId" type="text" required />
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input id="letterDeclaration" name="letterDeclaration" type="checkbox" />
+            <label for="letterDeclaration">
+              I declare that I will sign the outgoing register before leaving and report back to the hostel by the specified return time.
+            </label>
+          </div>
+
+          <div class="btn-row">
+            <button type="submit" class="btn btn--primary">Generate &amp; Download Letter</button>
+            <button type="button" class="btn btn--secondary" onclick="document.getElementById('form-type-selector').classList.remove('hidden'); document.getElementById('formal-letter-card').classList.add('hidden'); document.getElementById('form-type-selector').scrollIntoView();">Back</button>
+          </div>
+        </form>
+      </section>
+
       <section id="form-card" class="card">
         <h2 class="card__title">Student &amp; leave details</h2>
         <form id="leave-form" novalidate>
@@ -129,7 +203,7 @@
             </div>
             <div class="form-group">
               <label for="studentPhone">Student phone</label>
-              <input id="studentPhone" name="studentPhone" type="tel" inputmode="tel" required />
+              <input id="studentPhone" name="studentPhone" type="tel" inputmode="tel" pattern="[0-9]{10}" placeholder="10-digit phone number" title="Enter 10-digit phone number" required />
             </div>
             <div class="form-group">
               <label for="studentEmail">Student email</label>
@@ -137,7 +211,7 @@
             </div>
             <div class="form-group">
               <label for="parentPhone">Parent / guardian phone</label>
-              <input id="parentPhone" name="parentPhone" type="tel" inputmode="tel" required />
+              <input id="parentPhone" name="parentPhone" type="tel" inputmode="tel" pattern="[0-9]{10}" placeholder="10-digit phone number" title="Enter 10-digit phone number" required />
             </div>
           </div>
 
@@ -150,14 +224,20 @@
 
           <div class="btn-row">
             <button type="submit" class="btn btn--primary">Submit &amp; generate pass</button>
+            <button type="button" class="btn btn--secondary" onclick="document.getElementById('form-type-selector').classList.remove('hidden'); document.getElementById('form-card').classList.add('hidden'); document.getElementById('form-type-selector').scrollIntoView();">Back</button>
           </div>
         </form>
       </section>
 
       <section id="success-section" class="card hidden" aria-live="polite">
-        <h2 class="card__title">Application submitted</h2>
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <div style="font-size: 4rem; margin-bottom: 1rem; animation: bounce 0.6s ease-in-out;">🎉</div>
+          <h2 class="card__title" style="color: var(--success);">Congratulations!</h2>
+          <p class="page-desc" style="color: var(--success); font-weight: 500;">Your application has been submitted successfully</p>
+        </div>
+        
         <p class="page-desc" style="margin-bottom: 1rem">
-          Your request ID is <strong id="request-id-display"></strong>. A PDF has been downloaded. Keep the QR for
+          Your request ID is <strong id="request-id-display" style="color: var(--accent); font-size: 1.1rem;"></strong>. A PDF has been downloaded. Keep the QR for
           gate verification.
         </p>
         <div class="success-panel">
@@ -167,8 +247,9 @@
               reject requests in the <a href="admin.html">admin panel</a>.
             </p>
             <div class="btn-row">
-              <button type="button" id="btn-download-pdf" class="btn btn--secondary">Download PDF again</button>
-              <button type="button" id="btn-another" class="btn btn--primary">New application</button>
+              <button type="button" id="btn-download-pdf" class="btn btn--secondary">📥 Download PDF Report</button>
+              <button type="button" id="btn-download-filled-form" class="btn btn--secondary" style="display: none;">📋 Download Filled Form</button>
+              <button type="button" id="btn-another" class="btn btn--primary">➕ New application</button>
             </div>
           </div>
           <div id="qr-container" aria-label="QR code for leave pass"></div>
