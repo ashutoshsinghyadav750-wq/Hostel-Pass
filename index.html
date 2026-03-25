@@ -21,13 +21,13 @@
     <script>
       (function () {
         if (typeof HostelAuth === 'undefined' || !HostelAuth.isStudentLoggedIn()) {
-          window.location.replace('student-login.html?next=' + encodeURIComponent('index.html'));
+          window.location.replace('landing.html');
         }
       })();
     </script>
     <header class="site-header">
       <div class="site-header__inner">
-        <a href="index.html" class="brand">
+        <a href="landing.html" class="brand">
           HostelPass
           <span class="brand__badge">Leave</span>
         </a>

@@ -77,7 +77,7 @@
     navLogout.addEventListener('click', function (e) {
       e.preventDefault();
       HostelAuth.studentLogout();
-      window.location.href = 'student-login.html?next=' + encodeURIComponent('index.html');
+      window.location.href = 'landing.html';
     });
   }
 
