@@ -511,18 +511,38 @@
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(100);
-    doc.text('This is a system-generated filled form. For official use only.', margin, pageW - 10);
+    const pageH = doc.internal.pageSize.getHeight();
+    doc.text('This is a system-generated filled form. For official use only.', margin, pageH - 10);
 
     const filename = `Hostel_Leave_Form_${request.name.replace(/\s+/g, '_')}_${request.id}.pdf`;
     return { doc, fname: filename };
   }
 
-  function downloadPdf(doc, filename) {
+  async function downloadPdf(doc, filename) {
     if (!doc || !filename) {
       throw new Error('PDF document or filename missing');
     }
 
-    const blob = doc.output('blob');
+    // Prefer the native jsPDF save API when available (handles more browsers reliably).
+    if (typeof doc.save === 'function') {
+      try {
+        doc.save(filename);
+        return;
+      } catch (err) {
+        console.warn('doc.save() failed, falling back to blob download:', err);
+      }
+    }
+
+    let blob = doc.output('blob');
+    if (blob instanceof Promise) {
+      blob = await blob;
+    }
+
+    if (window.navigator && typeof window.navigator.msSaveOrOpenBlob === 'function') {
+      window.navigator.msSaveOrOpenBlob(blob, filename);
+      return;
+    }
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -569,7 +589,7 @@
 
       const { doc, fname } = buildPdf(request, lastQrDataUrl);
       try {
-        downloadPdf(doc, fname);
+        await downloadPdf(doc, fname);
       } catch (downloadErr) {
         console.warn('Auto-download blocked or failed, user can click Download button', downloadErr);
         showError('PDF download may be blocked by browser. Click "Download PDF again" to retry.');
@@ -619,7 +639,7 @@
 
       try {
         const { doc, fname } = buildFormalLetterPdf(letterData);
-        downloadPdf(doc, fname);
+        await downloadPdf(doc, fname);
         
         // Show success message
         requestIdEl.textContent = 'Letter generated successfully';
@@ -672,7 +692,7 @@
     resetFormSelection();
   });
 
-  btnDownloadPdf.addEventListener('click', function () {
+  btnDownloadPdf.addEventListener('click', async function () {
     clearError();
     if (!lastPayload || !lastQrDataUrl) {
       showError('No request data. Submit the form again.');
@@ -680,7 +700,7 @@
     }
     try {
       const { doc, fname } = buildPdf(lastPayload, lastQrDataUrl);
-      downloadPdf(doc, fname);
+      await downloadPdf(doc, fname);
     } catch (err) {
       console.error(err);
       showError('Unable to generate PDF. Please refresh and submit again.');
@@ -688,7 +708,7 @@
   });
 
   if (btnDownloadFilledForm) {
-    btnDownloadFilledForm.addEventListener('click', function () {
+    btnDownloadFilledForm.addEventListener('click', async function () {
       clearError();
       if (!lastPayload) {
         showError('No form data. Submit the form again.');
@@ -696,7 +716,7 @@
       }
       try {
         const { doc, fname } = buildFilledFormPdf(lastPayload);
-        downloadPdf(doc, fname);
+        await downloadPdf(doc, fname);
       } catch (err) {
         console.error(err);
         showError('Unable to generate filled form. Please try again.');

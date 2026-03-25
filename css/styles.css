@@ -27,16 +27,18 @@
 
 /* Document does not scroll — only `<main>` scrolls (header fixed). */
 html {
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   scroll-behavior: auto;
 }
 
 body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   font-family: var(--font);
@@ -160,6 +162,15 @@ main.main--apply {
   min-height: 0;
 }
 
+@media (max-width: 768px) {
+  main.main--apply {
+    overflow: visible;
+  }
+  main.main--apply .main-scroll {
+    min-height: auto;
+  }
+}
+
 main.main--apply .main-top {
   flex-shrink: 0;
   padding: 1.75rem 1.25rem 1rem;
@@ -170,11 +181,6 @@ main.main--apply .main-scroll {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable;
-  overscroll-behavior-y: contain;
-  padding: 0 1.25rem 2.5rem;
-}
   -webkit-overflow-scrolling: touch;
   scrollbar-gutter: stable;
   overscroll-behavior-y: contain;
