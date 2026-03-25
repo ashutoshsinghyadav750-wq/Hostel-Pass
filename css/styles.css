@@ -28,15 +28,15 @@
 /* Document does not scroll — only `<main>` scrolls (header fixed). */
 html {
   height: 100%;
-  overflow: hidden;
+  overflow: auto; /* enable page scroll */
   scroll-behavior: auto;
 }
 
 body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: auto; /* enable page scroll */
   display: flex;
   flex-direction: column;
   font-family: var(--font);
@@ -153,7 +153,7 @@ main.main--wide {
 
 /* Apply page: header + main top fixed; only form / success area scrolls */
 main.main--apply {
-  overflow: hidden;
+  overflow: auto; /* allow full page scrolling */
   display: flex;
   flex-direction: column;
   padding: 0;
