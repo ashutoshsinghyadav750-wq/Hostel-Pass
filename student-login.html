@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Student login — HostelPass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="index.html" class="brand">
+          HostelPass
+          <span class="brand__badge">Student</span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          <a href="index.html">Apply</a>
+          <a href="student-login.html" class="is-active">Student login</a>
+          <a href="admin.html">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <h1 class="page-title">Student access</h1>
+      <p class="page-desc">
+        Log in with your <strong>roll number</strong> and <strong>password</strong>. New students: create an account
+        first (Register), then apply for leave.
+      </p>
+
+      <section class="card login-card">
+        <div class="auth-tabs" role="tablist" aria-label="Login or register">
+          <button type="button" class="auth-tab is-active" role="tab" id="tab-login" aria-selected="true">
+            Log in
+          </button>
+          <button type="button" class="auth-tab" role="tab" id="tab-register" aria-selected="false">Register</button>
+        </div>
+
+        <div id="panel-login" role="tabpanel">
+          <h2 class="card__title" style="margin-top: 0; border: 0; padding-bottom: 0">Sign in</h2>
+          <div id="student-login-error" class="alert alert--error hidden" role="alert"></div>
+          <form id="form-student-login" autocomplete="on">
+            <div class="form-grid" style="grid-template-columns: 1fr">
+              <div class="form-group">
+                <label for="login-roll">Roll number</label>
+                <input
+                  id="login-roll"
+                  name="rollNumber"
+                  type="text"
+                  autocomplete="username"
+                  required
+                  autocapitalize="characters"
+                />
+              </div>
+              <div class="form-group">
+                <label for="login-password">Password</label>
+                <input
+                  id="login-password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn--primary">Continue to application</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="panel-register" class="hidden" role="tabpanel">
+          <h2 class="card__title" style="margin-top: 0; border: 0; padding-bottom: 0">New account</h2>
+          <div id="student-register-error" class="alert alert--error hidden" role="alert"></div>
+          <form id="form-student-register" autocomplete="on">
+            <div class="form-grid" style="grid-template-columns: 1fr">
+              <div class="form-group">
+                <label for="reg-name">Full name</label>
+                <input id="reg-name" name="name" type="text" autocomplete="name" required />
+              </div>
+              <div class="form-group">
+                <label for="reg-roll">Roll number</label>
+                <input
+                  id="reg-roll"
+                  name="rollNumber"
+                  type="text"
+                  autocomplete="off"
+                  required
+                  autocapitalize="characters"
+                />
+              </div>
+              <div class="form-group">
+                <label for="reg-password">Password</label>
+                <input
+                  id="reg-password"
+                  name="password"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  minlength="6"
+                />
+              </div>
+              <div class="form-group">
+                <label for="reg-password2">Confirm password</label>
+                <input
+                  id="reg-password2"
+                  name="passwordConfirm"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  minlength="6"
+                />
+              </div>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn--primary">Create account &amp; continue</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/users.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/student-login.js"></script>
+  </body>
+</html>

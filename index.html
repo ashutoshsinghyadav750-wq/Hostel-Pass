@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Student Leave Form — HostelPass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script>
+      window.HOSTEL_BACKEND_URL = 'http://localhost:4000';
+    </script>
+  </head>
+  <body>
+    <script src="js/users.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      (function () {
+        if (typeof HostelAuth === 'undefined' || !HostelAuth.isStudentLoggedIn()) {
+          window.location.replace('student-login.html?next=' + encodeURIComponent('index.html'));
+        }
+      })();
+    </script>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="index.html" class="brand">
+          HostelPass
+          <span class="brand__badge">Leave</span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          <a href="index.html" class="is-active">Apply</a>
+          <a href="admin.html">Admin</a>
+          <a href="#" id="nav-student-logout" class="nav-logout">Log out</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main--apply">
+      <div class="main-top">
+        <h1 class="page-title">Hostel leave application</h1>
+        <p class="page-desc">
+          Submit your details to receive a digital pass (QR) and an official PDF. Data is stored in this browser
+          (localStorage) until you clear site data or switch to a backend later.
+        </p>
+      </div>
+
+      <div class="main-scroll" id="apply-scroll">
+      <div id="form-error" class="alert alert--error hidden" role="alert"></div>
+
+      <section id="form-card" class="card">
+        <h2 class="card__title">Student &amp; leave details</h2>
+        <form id="leave-form" novalidate>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="name">Full name</label>
+              <input id="name" name="name" type="text" autocomplete="name" required />
+            </div>
+            <div class="form-group">
+              <label for="rollNumber">Roll number</label>
+              <input id="rollNumber" name="rollNumber" type="text" required />
+            </div>
+            <div class="form-group">
+              <label for="branch">Branch</label>
+              <select id="branch" name="branch" required>
+                <option value="">Select branch</option>
+                <option value="Computer Science &amp; Engineering">Computer Science &amp; Engineering</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Electronics &amp; Communication">Electronics &amp; Communication</option>
+                <option value="Electrical Engineering">Electrical Engineering</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="Chemical Engineering">Chemical Engineering</option>
+                <option value="Biotechnology">Biotechnology</option>
+                <option value="Artificial Intelligence &amp; Data Science">Artificial Intelligence &amp; Data Science</option>
+                <option value="Cyber Security">Cyber Security</option>
+                <option value="MCA">MCA</option>
+                <option value="MBA">MBA</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="roomNumber">Room number</label>
+              <input id="roomNumber" name="roomNumber" type="text" required />
+            </div>
+
+            <div class="form-group">
+              <label for="leaveType">Leave type</label>
+              <select id="leaveType" name="leaveType" required>
+                <option value="">Select type</option>
+                <option value="Home visit">Home visit</option>
+                <option value="Emergency">Emergency</option>
+                <option value="Medical">Medical</option>
+                <option value="Official">Official / internship</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group form-group--full">
+              <label for="reason">Reason</label>
+              <textarea id="reason" name="reason" required placeholder="Brief reason for leave"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="fromDate">From date</label>
+              <input id="fromDate" name="fromDate" type="date" required />
+            </div>
+            <div class="form-group">
+              <label for="toDate">To date</label>
+              <input id="toDate" name="toDate" type="date" required />
+            </div>
+            <div class="form-group">
+              <label for="leaveTime">Time (out)</label>
+              <input id="leaveTime" name="leaveTime" type="time" required />
+            </div>
+
+            <div class="form-group form-group--full">
+              <label for="address">Address during leave</label>
+              <input id="address" name="address" type="text" required />
+            </div>
+            <div class="form-group">
+              <label for="city">City</label>
+              <input id="city" name="city" type="text" required />
+            </div>
+            <div class="form-group">
+              <label for="state">State</label>
+              <input id="state" name="state" type="text" required />
+            </div>
+            <div class="form-group">
+              <label for="studentPhone">Student phone</label>
+              <input id="studentPhone" name="studentPhone" type="tel" inputmode="tel" required />
+            </div>
+            <div class="form-group">
+              <label for="studentEmail">Student email</label>
+              <input id="studentEmail" name="studentEmail" type="email" autocomplete="email" required />
+            </div>
+            <div class="form-group">
+              <label for="parentPhone">Parent / guardian phone</label>
+              <input id="parentPhone" name="parentPhone" type="tel" inputmode="tel" required />
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input id="declaration" name="declaration" type="checkbox" />
+            <label for="declaration">
+              I declare that the information provided is true and I will abide by hostel rules during leave.
+            </label>
+          </div>
+
+          <div class="btn-row">
+            <button type="submit" class="btn btn--primary">Submit &amp; generate pass</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="success-section" class="card hidden" aria-live="polite">
+        <h2 class="card__title">Application submitted</h2>
+        <p class="page-desc" style="margin-bottom: 1rem">
+          Your request ID is <strong id="request-id-display"></strong>. A PDF has been downloaded. Keep the QR for
+          gate verification.
+        </p>
+        <div class="success-panel">
+          <div class="success-panel__text">
+            <p style="color: var(--muted); font-size: 0.9rem; margin-top: 0">
+              After you log in as admin, use the <strong>Gate QR scanner</strong> on the admin page. Admins can also approve or
+              reject requests in the <a href="admin.html">admin panel</a>.
+            </p>
+            <div class="btn-row">
+              <button type="button" id="btn-download-pdf" class="btn btn--secondary">Download PDF again</button>
+              <button type="button" id="btn-another" class="btn btn--primary">New application</button>
+            </div>
+          </div>
+          <div id="qr-container" aria-label="QR code for leave pass"></div>
+        </div>
+      </section>
+
+      <p class="footer-hint">HostelPass — front-end prototype using localStorage.</p>
+      </div>
+    </main>
+
+    <script src="js/vendor/qrcode.min.js"></script>
+    <script src="js/vendor/jspdf.umd.min.js"></script>
+    <script src="js/vendor/jspdf.plugin.autotable.min.js"></script>
+    <script>
+      // Fallback to CDN if local vendor file failed to load (network policy / file missing)
+      if (!window.QRCode) {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"><\/script>');
+      }
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>');
+      }
+      if (!window.jspdf || !window.jspdf.autoTable) {
+        document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"><\/script>');
+      }
+    </script>
+    <script src="js/storage.js"></script>
+    <script src="js/student.js"></script>
+  </body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin — HostelPass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script>
+      window.HOSTEL_BACKEND_URL = 'http://localhost:4000';
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="index.html" class="brand">
+          HostelPass
+          <span class="brand__badge">Admin</span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          <a href="index.html">Apply</a>
+          <a href="student-login.html">Student login</a>
+          <a href="admin.html" class="is-active">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main--wide">
+      <h1 class="page-title">Admin — leave requests</h1>
+      <p class="page-desc">
+        Only people who know the <strong>admin username and password</strong> set via
+        <a href="admin-setup.html">admin setup</a> can sign in. There is no public default password.
+      </p>
+
+      <div id="admin-not-configured" class="alert alert--error hidden" role="alert">
+        No admin account exists yet. Authorized personnel: open the
+        <a href="admin-setup.html"><strong>Admin setup</strong></a> page first, enter the setup key, and create an admin.
+      </div>
+
+      <section id="login-section" class="card login-card">
+        <h2 class="card__title">Sign in</h2>
+        <p class="page-desc" style="margin: -0.5rem 0 1rem; font-size: 0.85rem">
+          First time? <a href="admin-setup.html">Admin setup (authorized personnel only)</a>
+        </p>
+        <div id="login-error" class="alert alert--error hidden" role="alert"></div>
+        <form id="login-form">
+          <div class="form-grid" style="grid-template-columns: 1fr">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input id="username" name="username" type="text" autocomplete="username" required />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" autocomplete="current-password" required />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn--primary">Enter admin</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="admin-section" class="hidden">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem">
+          <p class="page-desc" style="margin: 0">All requests from this browser&apos;s storage.</p>
+          <div class="btn-row" style="margin: 0">
+            <a class="btn btn--secondary" href="#admin-scanner" style="text-decoration: none">Gate scanner</a>
+            <button type="button" id="btn-logout" class="btn btn--secondary">Log out</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden">
+          <div id="empty-state" class="empty-state hidden">No leave requests yet. Students can apply from the Apply page.</div>
+          <div class="table-wrap">
+            <table id="requests-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Roll</th>
+                  <th>Room</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <section id="admin-scanner" class="card scanner-wrap" style="margin-top: 1.25rem; max-width: 28rem">
+          <h2 class="card__title">Gate QR scanner</h2>
+          <p class="page-desc" style="margin: -0.5rem 0 1rem; font-size: 0.875rem; color: var(--muted)">
+            Scan a student leave QR (request ID). Allow camera access; use HTTPS or <code>localhost</code> if needed.
+          </p>
+          <div id="admin-reader" role="region" aria-label="QR camera view"></div>
+          <div class="btn-row" style="margin-top: 1rem">
+            <button type="button" id="admin-btn-start-scan" class="btn btn--primary">Start camera</button>
+            <button type="button" id="admin-btn-stop-scan" class="btn btn--secondary hidden">Stop camera</button>
+          </div>
+
+          <div id="admin-scan-result-ok" class="scan-result hidden">
+            <h3 style="margin: 0 0 1rem; font-size: 1rem">Pass details</h3>
+            <dl>
+              <dt>Request ID</dt>
+              <dd id="admin-scan-id" style="font-family: ui-monospace, monospace; font-size: 0.85rem">—</dd>
+              <dt>Name</dt>
+              <dd id="admin-scan-name">—</dd>
+              <dt>Roll number</dt>
+              <dd id="admin-scan-roll">—</dd>
+              <dt>Room</dt>
+              <dd id="admin-scan-room">—</dd>
+              <dt>Status</dt>
+              <dd><span id="admin-scan-status" class="badge badge--pending">—</span></dd>
+            </dl>
+          </div>
+
+          <div id="admin-scan-result-invalid" class="scan-result hidden" style="border-color: rgba(255, 69, 58, 0.45)">
+            <p style="margin: 0; font-weight: 600; color: #ffb4b0">Invalid QR</p>
+            <p style="margin: 0.5rem 0 0; color: var(--muted); font-size: 0.9rem">
+              No matching leave request for this code on this device.
+            </p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/scanner.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>

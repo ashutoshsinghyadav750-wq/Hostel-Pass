@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin setup — HostelPass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="index.html" class="brand">
+          HostelPass
+          <span class="brand__badge">Setup</span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          <a href="index.html">Apply</a>
+          <a href="student-login.html">Student login</a>
+          <a href="admin.html">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <h1 class="page-title">Hostel admin setup</h1>
+      <p class="page-desc">
+        This page is for <strong>authorized hostel personnel only</strong>. There is no public default admin password —
+        set your admin username and password here. Change the <strong>setup key</strong> in <code>js/auth.js</code>
+        before you deploy.
+      </p>
+
+      <div id="setup-status-configured" class="alert alert--success hidden" role="status">
+        An admin is already configured in this browser. Below, you can enter the setup key and a
+        <strong>new username/password</strong> to replace the existing admin.
+      </div>
+
+      <section class="card login-card" style="max-width: 28rem">
+        <h2 class="card__title">Create / replace admin</h2>
+        <div id="setup-error" class="alert alert--error hidden" role="alert"></div>
+        <div id="setup-success" class="alert alert--success hidden" role="status"></div>
+        <form id="admin-setup-form" autocomplete="off">
+          <div class="form-grid" style="grid-template-columns: 1fr">
+            <div class="form-group">
+              <label for="setup-key">Hostel setup key</label>
+              <input
+                id="setup-key"
+                name="setupKey"
+                type="password"
+                required
+                placeholder="Secret provided by authorized personnel"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group">
+              <label for="setup-username">Admin username</label>
+              <input id="setup-username" name="username" type="text" required autocomplete="username" />
+            </div>
+            <div class="form-group">
+              <label for="setup-password">Admin password</label>
+              <input
+                id="setup-password"
+                name="password"
+                type="password"
+                required
+                minlength="8"
+                autocomplete="new-password"
+              />
+            </div>
+            <div class="form-group">
+              <label for="setup-password2">Confirm password</label>
+              <input
+                id="setup-password2"
+                name="passwordConfirm"
+                type="password"
+                required
+                minlength="8"
+                autocomplete="new-password"
+              />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn--primary">Save admin account</button>
+            <button type="button" id="fill-example-btn" class="btn btn--secondary">Fill example</button>
+            <a class="btn btn--secondary" href="admin.html" style="text-decoration: none">Admin login</a>
+          </div>
+        </form>
+      </section>
+
+      <p class="footer-hint" style="max-width: 36rem; margin-inline: auto">
+        Security note: this is all front-end — anyone who can read <code>auth.js</code> can see the setup key if the
+        files are public. For a real deployment, use a backend with server-side authentication.
+      </p>
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script src="js/admin-setup.js"></script>
+  </body>
+</html>
