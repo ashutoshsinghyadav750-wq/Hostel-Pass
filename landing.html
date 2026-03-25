@@ -32,22 +32,53 @@
       }
 
       html {
-        height: 100%;
-        overflow: hidden;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
       }
 
       body {
-        height: 100%;
+        min-height: 100vh;
+        height: auto;
         margin: 0;
         font-family: var(--font);
         background: linear-gradient(135deg, var(--bg) 0%, #0a0e1a 100%);
         color: var(--text);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
+        display: block;
+        overflow-x: hidden;
+        overflow-y: auto;
         -webkit-font-smoothing: antialiased;
+        padding: 0.75rem 0.5rem 1.5rem;
+      }
+
+      .landing-container {
+        text-align: center;
+        z-index: 1;
+        max-width: 800px;
+        width: min(100%, 800px);
+        margin: 0 auto;
+        padding: 1.5rem;
+        animation: slideUp 0.8s ease-out;
+      }
+
+      @media (max-width: 768px) {
+        .landing-container {
+          padding: 1rem;
+        }
+
+        .main-heading {
+          font-size: 2rem;
+        }
+
+        .subheading {
+          font-size: 1rem;
+          max-width: 90%;
+        }
+
+        .features {
+          gap: 1rem;
+          margin-bottom: 1.75rem;
+        }
       }
 
       /* Animated background */
