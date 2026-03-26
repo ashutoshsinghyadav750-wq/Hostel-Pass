@@ -12,7 +12,23 @@
     />
     <link rel="stylesheet" href="css/styles.css" />
     <script>
-      window.HOSTEL_BACKEND_URL = 'http://localhost:4000';
+      (function () {
+        const isFile = window.location.protocol === 'file:';
+        const host = window.location.hostname;
+        if (isFile) {
+          window.HOSTEL_BACKEND_URL = 'http://localhost:4000';
+          return;
+        }
+        if (window.location.port && window.location.port !== '4000') {
+          window.HOSTEL_BACKEND_URL = `${window.location.protocol}//${host}:4000`;
+          return;
+        }
+        if (host === 'localhost' || host === '127.0.0.1') {
+          window.HOSTEL_BACKEND_URL = `${window.location.protocol}//${host}:4000`;
+          return;
+        }
+        window.HOSTEL_BACKEND_URL = window.location.origin;
+      })();
     </script>
   </head>
   <body>
@@ -42,10 +58,7 @@
     <main class="main--apply">
       <div class="main-top">
         <h1 class="page-title">Hostel leave application</h1>
-        <p class="page-desc">
-          Submit your details to receive a digital pass (QR) and an official PDF. Data is stored in this browser
-          (localStorage) until you clear site data or switch to a backend later.
-        </p>
+        <p class="page-desc">Submit your details to receive a digital pass (QR) and an official PDF.</p>
       </div>
 
       <div class="main-scroll" id="apply-scroll">
@@ -69,45 +82,75 @@
         <h2 class="card__title">Hostel Leave Application Letter</h2>
         <form id="formal-letter-form" novalidate>
           <div class="form-grid">
+            <div class="form-group">
+              <label for="wardenName">To</label>
+              <input id="wardenName" name="wardenName" type="text" value="The Warden" required />
+            </div>
             <div class="form-group form-group--full">
               <label for="hostelName">Hostel Name/Block</label>
               <input id="hostelName" name="hostelName" type="text" placeholder="e.g., Blue Bells Residency, Block B" required />
+            </div>
+            <div class="form-group form-group--full">
+              <label for="collegeName">College Name</label>
+              <input id="collegeName" name="collegeName" type="text" placeholder="e.g., ABC Institute of Technology" required />
             </div>
             <div class="form-group">
               <label for="letterDate">Date</label>
               <input id="letterDate" name="letterDate" type="date" required />
             </div>
             <div class="form-group">
-              <label for="formalStartDate">From Date/Time</label>
-              <input id="formalStartDate" name="formalStartDate" type="datetime-local" required />
+              <label for="letterSubject">Subject</label>
+              <input id="letterSubject" name="letterSubject" type="text" value="Application for Leave" required />
             </div>
             <div class="form-group">
-              <label for="formalEndDate">Return Date/Time</label>
-              <input id="formalEndDate" name="formalEndDate" type="datetime-local" required />
+              <label for="letterSalutation">Salutation</label>
+              <select id="letterSalutation" name="letterSalutation" required>
+                <option value="Respected Sir,">Respected Sir</option>
+                <option value="Respected Madam,">Respected Madam</option>
+                <option value="Respected Sir/Madam,">Respected Sir/Madam</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="formalStartDate">From Date</label>
+              <input id="formalStartDate" name="formalStartDate" type="date" required />
+            </div>
+            <div class="form-group">
+              <label for="formalEndDate">To Date</label>
+              <input id="formalEndDate" name="formalEndDate" type="date" required />
+            </div>
+            <div class="form-group">
+              <label for="reasonType">Reason</label>
+              <select id="reasonType" name="reasonType" required>
+                <option value="">Select reason</option>
+                <option value="personal reasons">Personal reasons</option>
+                <option value="family function">Family function</option>
+                <option value="medical reasons">Medical reasons</option>
+                <option value="other">Other (I will write my own)</option>
+              </select>
             </div>
             <div class="form-group form-group--full">
-              <label for="leaveReasonLetter">Reason for Leave</label>
-              <textarea id="leaveReasonLetter" name="leaveReasonLetter" required placeholder="e.g., to visit my hometown for a festival / to attend a family wedding / for a medical appointment"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="letterStudentPhone">Your Mobile Number</label>
-              <input id="letterStudentPhone" name="letterStudentPhone" type="tel" inputmode="tel" pattern="[0-9]{10}" placeholder="10-digit phone number" required />
-            </div>
-            <div class="form-group">
-              <label for="letterParentPhone">Parent's Phone Number</label>
-              <input id="letterParentPhone" name="letterParentPhone" type="tel" inputmode="tel" pattern="[0-9]{10}" placeholder="10-digit phone number" required />
+              <label for="leaveReasonLetter">Custom Reason (Optional)</label>
+              <textarea id="leaveReasonLetter" name="leaveReasonLetter" placeholder="Write your own reason here (required if you selected Other)"></textarea>
             </div>
             <div class="form-group">
               <label for="letterStudentName">Your Name</label>
               <input id="letterStudentName" name="letterStudentName" type="text" required />
             </div>
             <div class="form-group">
+              <label for="letterCourseYear">Your Course/Year</label>
+              <input id="letterCourseYear" name="letterCourseYear" type="text" placeholder="e.g., B.Tech 2nd Year" required />
+            </div>
+            <div class="form-group">
+              <label for="letterCourseBranch">Course/Branch</label>
+              <input id="letterCourseBranch" name="letterCourseBranch" type="text" placeholder="e.g., Computer Science &amp; Engineering" required />
+            </div>
+            <div class="form-group">
               <label for="letterRoomNumber">Room Number</label>
               <input id="letterRoomNumber" name="letterRoomNumber" type="text" required />
             </div>
             <div class="form-group">
-              <label for="letterStudentId">Student ID</label>
-              <input id="letterStudentId" name="letterStudentId" type="text" required />
+              <label for="letterStudentPhone">Contact Number</label>
+              <input id="letterStudentPhone" name="letterStudentPhone" type="tel" inputmode="tel" pattern="[0-9]{10}" placeholder="10-digit phone number" required />
             </div>
           </div>
 
@@ -256,7 +299,7 @@
         </div>
       </section>
 
-      <p class="footer-hint">HostelPass — front-end prototype using localStorage.</p>
+      <p class="footer-hint">HostelPass — backend-enabled with local browser fallback.</p>
       </div>
     </main>
 

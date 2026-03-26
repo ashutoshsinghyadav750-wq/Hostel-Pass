@@ -2,6 +2,29 @@
  * Hostel Leave Management — localStorage persistence
  */
 const STORAGE_KEY = 'hostelLeaveRequests_v1';
+function resolveBackendUrl() {
+  if (window.HOSTEL_BACKEND_URL) return window.HOSTEL_BACKEND_URL;
+  const protocol = window.location.protocol;
+  const host = window.location.hostname;
+  if (protocol === 'file:') return 'http://localhost:4000';
+  if (window.location.port && window.location.port !== '4000') {
+    return `${window.location.protocol}//${host}:4000`;
+  }
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return `${window.location.protocol}//${host}:4000`;
+  }
+  return window.location.origin;
+}
+const BACKEND_URL = resolveBackendUrl();
+
+function getApiHeaders(extraHeaders) {
+  const headers = { ...(extraHeaders || {}) };
+  if (window.HostelAuth && typeof window.HostelAuth.getAdminApiKey === 'function') {
+    const apiKey = window.HostelAuth.getAdminApiKey();
+    if (apiKey) headers['x-api-key'] = apiKey;
+  }
+  return headers;
+}
 
 function generateRequestId() {
   const ts = Date.now().toString(36).toUpperCase();
@@ -56,14 +79,13 @@ async function deleteRequestAsync(id) {
   try {
     await safeFetch(`${BACKEND_URL.replace(/\/$/, '')}/api/requests/${encodeURIComponent(id)}`, {
       method: 'DELETE',
+      headers: getApiHeaders(),
     });
     return true;
   } catch (err) {
     return deleteRequest(id);
   }
 }
-
-const BACKEND_URL = window.HOSTEL_BACKEND_URL || '';
 
 async function safeFetch(url, options) {
   try {
@@ -83,7 +105,10 @@ async function safeFetch(url, options) {
 async function getAllRequestsAsync() {
   if (!BACKEND_URL) return getAllRequests();
   try {
-    const result = await safeFetch(`${BACKEND_URL.replace(/\/$/, '')}/api/requests`, { method: 'GET' });
+    const result = await safeFetch(`${BACKEND_URL.replace(/\/$/, '')}/api/requests`, {
+      method: 'GET',
+      headers: getApiHeaders(),
+    });
     return Array.isArray(result.requests) ? result.requests : [];
   } catch (err) {
     return getAllRequests();
@@ -95,7 +120,7 @@ async function saveRequestAsync(request) {
   try {
     const result = await safeFetch(`${BACKEND_URL.replace(/\/$/, '')}/api/requests`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getApiHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(request),
     });
     if (result && result.request) {
@@ -112,7 +137,7 @@ async function updateRequestStatusAsync(id, status) {
   try {
     const result = await safeFetch(`${BACKEND_URL.replace(/\/$/, '')}/api/requests/${encodeURIComponent(id)}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getApiHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ status }),
     });
     if (result && result.request) {

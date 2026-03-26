@@ -13,6 +13,8 @@
   const btnDownloadFilledForm = document.getElementById('btn-download-filled-form');
   const rollInput = document.getElementById('rollNumber');
   const nameInput = document.getElementById('name');
+  const reasonTypeInput = document.getElementById('reasonType');
+  const reasonCustomInput = document.getElementById('leaveReasonLetter');
 
   const session = typeof HostelAuth !== 'undefined' ? HostelAuth.getStudentSession() : null;
   if (session && rollInput) {
@@ -30,7 +32,6 @@
   if (session) {
     const letterNameInput = document.getElementById('letterStudentName');
     const letterRoomInput = document.getElementById('letterRoomNumber');
-    const letterIdInput = document.getElementById('letterStudentId');
     const letterDateInput = document.getElementById('letterDate');
 
     if (letterNameInput && session.name) {
@@ -40,12 +41,24 @@
     if (letterRoomInput && session.roomNumber) {
       letterRoomInput.value = session.roomNumber;
     }
-    if (letterIdInput && session.rollNumber) {
-      letterIdInput.value = session.rollNumber;
-    }
     if (letterDateInput) {
       letterDateInput.valueAsDate = new Date();
     }
+  }
+
+  function updateCustomReasonVisibility() {
+    if (!reasonTypeInput || !reasonCustomInput) return;
+    const selected = (reasonTypeInput.value || '').toLowerCase();
+    const needsCustom = selected === 'other';
+    reasonCustomInput.required = needsCustom;
+    reasonCustomInput.placeholder = needsCustom
+      ? 'Write your reason in your own words'
+      : 'Optional: you can still write a custom reason';
+  }
+
+  if (reasonTypeInput) {
+    reasonTypeInput.addEventListener('change', updateCustomReasonVisibility);
+    updateCustomReasonVisibility();
   }
 
   // Form type selector buttons
@@ -96,7 +109,7 @@
 
   function isValidPhoneNumber(phone) {
     const cleaned = (phone || '').toString().replace(/\D/g, '');
-    return cleaned.length === 10 && /^[6-9]/.test(cleaned);
+    return cleaned.length === 10;
   }
 
   function checkDependencies() {
@@ -196,20 +209,31 @@
   }
 
   function validateFormalLetter(data) {
+    if (!data.wardenName) return 'Please enter addressee (e.g., The Warden).';
     if (!data.hostelName) return 'Please enter hostel name/block.';
+    if (!data.collegeName) return 'Please enter college name.';
     if (!data.letterDate) return 'Please select date.';
-    if (!data.formalStartDate) return 'Please select from date/time.';
-    if (!data.formalEndDate) return 'Please select return date/time.';
-    if (!data.leaveReasonLetter) return 'Please enter reason for leave.';
-    if (!data.letterStudentPhone || !data.letterParentPhone) return 'Please enter both phone numbers.';
+    if (!data.letterSubject) return 'Please enter subject.';
+    if (!data.letterSalutation) return 'Please select salutation.';
+    if (!data.formalStartDate) return 'Please select from date.';
+    if (!data.formalEndDate) return 'Please select to date.';
+    if (!data.reasonType) return 'Please select reason type.';
+    if (data.reasonType === 'other' && !data.leaveReasonLetter) return 'Please write your custom reason.';
+    if (!data.letterStudentPhone) return 'Please enter contact number.';
     if (!isValidPhoneNumber(data.letterStudentPhone)) return 'Please enter a valid 10-digit phone number for yourself.';
-    if (!isValidPhoneNumber(data.letterParentPhone)) return 'Please enter a valid 10-digit phone number for your parent/guardian.';
     if (!data.letterStudentName) return 'Please enter your name.';
+    if (!data.letterCourseYear) return 'Please enter your course/year.';
+    if (!data.letterCourseBranch) return 'Please enter course/branch.';
     if (!data.letterRoomNumber) return 'Please enter room number.';
-    if (!data.letterStudentId) return 'Please enter student ID.';
     if (!data.letterDeclaration) return 'You must accept the declaration.';
-    if (new Date(data.formalStartDate) >= new Date(data.formalEndDate)) return 'Return date/time must be after start date/time.';
+    if (new Date(data.formalStartDate) > new Date(data.formalEndDate)) return 'To date must be same or after from date.';
     return null;
+  }
+
+  function getFormalReasonText(data) {
+    const custom = (data.leaveReasonLetter || '').trim();
+    if (custom) return custom;
+    return data.reasonType;
   }
 
   function buildFormalLetterPdf(letterData) {
@@ -223,57 +247,29 @@
     const margin = 20;
     let y = margin;
 
-    // Headers
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text('HOSTEL LEAVE APPLICATION', pageW / 2, y, { align: 'center' });
-    y += 8;
-
-    // To: Address
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.text('To: The Hostel Warden', margin, y);
+    doc.text('To,', margin, y);
     y += 5;
-    doc.text('Hostel Name/Block: ' + letterData.hostelName, margin, y);
-    y += 7;
+    doc.text(letterData.wardenName, margin, y);
+    y += 5;
+    doc.text(letterData.hostelName, margin, y);
+    y += 5;
+    doc.text(letterData.collegeName, margin, y);
+    y += 5;
 
-    // Date
     doc.text('Date: ' + letterData.letterDate, margin, y);
+    y += 7;
+    doc.text('Subject: ' + letterData.letterSubject, margin, y);
     y += 10;
 
-    // Salutation
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text('Respected Sir/Madam,', margin, y);
+    doc.text(letterData.letterSalutation, margin, y);
     y += 8;
 
-    // Body
-    doc.setFontSize(10);
-    const startDateStr = new Date(letterData.formalStartDate).toLocaleString();
-    const endDateStr = new Date(letterData.formalEndDate).toLocaleString();
-    
-    const bodyText = `I am writing to request permission to leave the hostel premises from ${startDateStr} to ${endDateStr}.\n\nThe reason for my leave is ${letterData.leaveReasonLetter}.\n\nWhile I am away, I can be reached at my mobile number: ${letterData.letterStudentPhone}. My parents are aware of this travel and can be contacted at ${letterData.letterParentPhone} for verification if required.\n\nI will ensure that I sign the outgoing register before leaving and report back to the hostel by the specified return time.`;
-    
+    const reasonText = getFormalReasonText(letterData);
+    const bodyText = `I am ${letterData.letterStudentName}, a student of ${letterData.letterCourseYear} residing in room number ${letterData.letterRoomNumber}. I would like to inform you that I need to go home due to ${reasonText}.\n\nTherefore, I kindly request you to grant me leave from ${letterData.formalStartDate} to ${letterData.formalEndDate}. I assure you that I will follow all hostel rules and return on time.\n\nI hope you will consider my request.\n\nThanking you.\n\nYours obediently,\n${letterData.letterStudentName}\n${letterData.letterCourseBranch}\n${letterData.letterRoomNumber}\n${letterData.letterStudentPhone}`;
     const splitText = doc.splitTextToSize(bodyText, pageW - 2 * margin);
     doc.text(splitText, margin, y);
-    y += splitText.length * 5 + 5;
-
-    // Closing
-    doc.text('Thank you for your cooperation.', margin, y);
-    y += 8;
-    doc.text('Yours sincerely,', margin, y);
-    y += 12;
-
-    // Signature space and details
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text('[Your Signature]', margin, y);
-    y += 8;
-    doc.text('Name: ' + letterData.letterStudentName, margin, y);
-    y += 5;
-    doc.text('Room Number: ' + letterData.letterRoomNumber, margin, y);
-    y += 5;
-    doc.text('Student ID: ' + letterData.letterStudentId, margin, y);
 
     const filename = `Hostel_Leave_Letter_${letterData.letterStudentName}_${new Date().toISOString().split('T')[0]}.pdf`;
     return { doc, fname: filename };
@@ -618,16 +614,21 @@
       console.log('formal-letter-form submit triggered');
       const fd = new FormData(formalLetterForm);
       const letterData = {
+        wardenName: fd.get('wardenName'),
         hostelName: fd.get('hostelName'),
+        collegeName: fd.get('collegeName'),
         letterDate: fd.get('letterDate'),
+        letterSubject: fd.get('letterSubject'),
+        letterSalutation: fd.get('letterSalutation'),
         formalStartDate: fd.get('formalStartDate'),
         formalEndDate: fd.get('formalEndDate'),
+        reasonType: fd.get('reasonType'),
         leaveReasonLetter: fd.get('leaveReasonLetter'),
         letterStudentPhone: fd.get('letterStudentPhone'),
-        letterParentPhone: fd.get('letterParentPhone'),
         letterStudentName: fd.get('letterStudentName'),
+        letterCourseYear: fd.get('letterCourseYear'),
+        letterCourseBranch: fd.get('letterCourseBranch'),
         letterRoomNumber: fd.get('letterRoomNumber'),
-        letterStudentId: fd.get('letterStudentId'),
         letterDeclaration: fd.get('letterDeclaration') === 'on',
       };
 

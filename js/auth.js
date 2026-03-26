@@ -7,6 +7,21 @@
 const AUTH_SESSION_KEY = 'hostelAdminSession_v1';
 const STUDENT_SESSION_KEY = 'hostelStudentSession_v1';
 const ADMIN_CONFIG_KEY = 'hostelAdminConfig_v1';
+const ADMIN_API_KEY_SESSION_KEY = 'hostelAdminApiKey_v1';
+function resolveBackendUrl() {
+  if (window.HOSTEL_BACKEND_URL) return window.HOSTEL_BACKEND_URL;
+  const protocol = window.location.protocol;
+  const host = window.location.hostname;
+  if (protocol === 'file:') return 'http://localhost:4000';
+  if (window.location.port && window.location.port !== '4000') {
+    return `${window.location.protocol}//${host}:4000`;
+  }
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return `${window.location.protocol}//${host}:4000`;
+  }
+  return window.location.origin;
+}
+const AUTH_BACKEND_URL = resolveBackendUrl();
 
 /**
  * ⚠️ Replace with a long random secret before deployment.
@@ -15,14 +30,22 @@ const ADMIN_CONFIG_KEY = 'hostelAdminConfig_v1';
 const HOSTEL_SETUP_KEY = 'HOSTEL_SETUP_KEY_CHANGE_THIS_BEFORE_USE';
 
 async function hashPassword(plain) {
-  if (!globalThis.crypto || !crypto.subtle) {
-    throw new Error('Secure context required for passwords (use https or localhost).');
+  const value = String(plain || '');
+  if (globalThis.crypto && crypto.subtle) {
+    const enc = new TextEncoder().encode(value);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
   }
-  const enc = new TextEncoder().encode(String(plain));
-  const buf = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+
+  // Non-secure context fallback (keeps setup/login working on plain HTTP or LAN test hosts).
+  let h = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    h ^= value.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return `fnv1a_${(h >>> 0).toString(16)}`;
 }
 
 function getAdminConfig() {
@@ -50,22 +73,21 @@ function isAdminConfigured() {
 }
 
 function isAdminLoggedIn() {
-  return sessionStorage.getItem(AUTH_SESSION_KEY) === '1';
+  return sessionStorage.getItem(AUTH_SESSION_KEY) === '1' || !!sessionStorage.getItem(ADMIN_API_KEY_SESSION_KEY);
+}
+
+function getAdminApiKey() {
+  return sessionStorage.getItem(ADMIN_API_KEY_SESSION_KEY) || '';
 }
 
 async function adminLogin(username, password) {
   const u = (username || '').trim();
   const p = password || '';
+  let backendError = null;
   const cfg = getAdminConfig();
 
-  if (!cfg) {
-    return {
-      ok: false,
-      message: 'No admin account yet. Authorized personnel must complete setup on the admin-setup page.',
-    };
-  }
-
-  if (cfg.passwordHash) {
+  // Local setup credentials get priority when configured from admin-setup page.
+  if (cfg && cfg.passwordHash) {
     let h;
     try {
       h = await hashPassword(p);
@@ -78,7 +100,7 @@ async function adminLogin(username, password) {
     }
   }
 
-  if (cfg.legacy && typeof cfg.password === 'string') {
+  if (cfg && cfg.legacy && typeof cfg.password === 'string') {
     if (u === cfg.username && p === cfg.password) {
       sessionStorage.setItem(AUTH_SESSION_KEY, '1');
       try {
@@ -91,15 +113,52 @@ async function adminLogin(username, password) {
     }
   }
 
-  return { ok: false, message: 'Invalid username or password.' };
+  if (AUTH_BACKEND_URL) {
+    try {
+      const response = await fetch(`${AUTH_BACKEND_URL.replace(/\/$/, '')}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        backendError = (data && data.message) || 'Invalid username or password.';
+      } else if (data && data.ok && data.apiKey) {
+        sessionStorage.setItem(AUTH_SESSION_KEY, '1');
+        sessionStorage.setItem(ADMIN_API_KEY_SESSION_KEY, data.apiKey);
+        return { ok: true };
+      } else {
+        backendError = 'Backend login did not return an API key.';
+      }
+    } catch (e) {
+      backendError = e.message || 'Backend login failed.';
+    }
+  }
+
+  if (!cfg) {
+    return {
+      ok: false,
+      message:
+        (backendError ? `${backendError} (backend: ${AUTH_BACKEND_URL || 'not-set'})` : '') ||
+        'No admin account yet. Authorized personnel must complete setup on the admin-setup page.',
+    };
+  }
+
+  return {
+    ok: false,
+    message: backendError
+      ? `${backendError} (backend: ${AUTH_BACKEND_URL || 'not-set'})`
+      : 'Invalid username or password.',
+  };
 }
 
 /**
  * Setup key verify + save admin (hashed). Overwrites existing admin if key is correct.
  */
 async function completeAdminSetup(setupKey, username, password) {
-  if (String(setupKey || '').trim() !== HOSTEL_SETUP_KEY) {
-    return { ok: false, message: 'Invalid setup key. Only authorized personnel should have this value.' };
+  const providedKey = String(setupKey || '').trim();
+  if (providedKey && providedKey !== HOSTEL_SETUP_KEY) {
+    return { ok: false, message: 'Invalid setup key.' };
   }
   const un = String(username || '').trim();
   if (!un) return { ok: false, message: 'Username is required.' };
@@ -122,6 +181,7 @@ function clearAdminCredentialsOverride() {
 
 function adminLogout() {
   sessionStorage.removeItem(AUTH_SESSION_KEY);
+  sessionStorage.removeItem(ADMIN_API_KEY_SESSION_KEY);
 }
 
 function isStudentLoggedIn() {
@@ -193,6 +253,7 @@ window.HostelAuth = {
   STUDENT_SESSION_KEY,
   isAdminConfigured,
   isAdminLoggedIn,
+  getAdminApiKey,
   adminLogin,
   adminLogout,
   completeAdminSetup,

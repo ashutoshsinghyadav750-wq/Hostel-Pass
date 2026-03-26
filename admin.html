@@ -12,7 +12,23 @@
     />
     <link rel="stylesheet" href="css/styles.css" />
     <script>
-      window.HOSTEL_BACKEND_URL = 'http://localhost:4000';
+      (function () {
+        const isFile = window.location.protocol === 'file:';
+        const host = window.location.hostname;
+        if (isFile) {
+          window.HOSTEL_BACKEND_URL = 'http://localhost:4000';
+          return;
+        }
+        if (window.location.port && window.location.port !== '4000') {
+          window.HOSTEL_BACKEND_URL = `${window.location.protocol}//${host}:4000`;
+          return;
+        }
+        if (host === 'localhost' || host === '127.0.0.1') {
+          window.HOSTEL_BACKEND_URL = `${window.location.protocol}//${host}:4000`;
+          return;
+        }
+        window.HOSTEL_BACKEND_URL = window.location.origin;
+      })();
     </script>
   </head>
   <body>
@@ -32,10 +48,7 @@
 
     <main class="main--wide">
       <h1 class="page-title">Admin — leave requests</h1>
-      <p class="page-desc">
-        Only people who know the <strong>admin username and password</strong> set via
-        <a href="admin-setup.html">admin setup</a> can sign in. There is no public default password.
-      </p>
+      <p class="page-desc">Sign in with your admin credentials to view and manage requests.</p>
 
       <div id="admin-not-configured" class="alert alert--error hidden" role="alert">
         No admin account exists yet. Authorized personnel: open the
@@ -67,7 +80,7 @@
 
       <section id="admin-section" class="hidden">
         <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem">
-          <p class="page-desc" style="margin: 0">All requests from this browser&apos;s storage.</p>
+          <p class="page-desc" style="margin: 0">Requests load from the backend when available, otherwise this browser&apos;s local storage.</p>
           <div class="btn-row" style="margin: 0">
             <a class="btn btn--secondary" href="#admin-scanner" style="text-decoration: none">Gate scanner</a>
             <button type="button" id="btn-logout" class="btn btn--secondary">Log out</button>

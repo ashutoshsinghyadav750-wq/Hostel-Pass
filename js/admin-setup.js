@@ -24,24 +24,30 @@
     e.preventDefault();
     errEl.classList.add('hidden');
     okEl.classList.add('hidden');
-    const fd = new FormData(form);
-    const key = fd.get('setupKey');
-    const user = fd.get('username');
-    const pass = fd.get('password');
-    const pass2 = fd.get('passwordConfirm');
-    if (String(pass) !== String(pass2)) {
-      errEl.textContent = 'Passwords do not match.';
-      errEl.classList.remove('hidden');
-      return;
-    }
-    const res = await HostelAuth.completeAdminSetup(key, user, pass);
-    if (res.ok) {
-      okEl.textContent = 'Admin account saved. You can sign in from admin.html.';
-      okEl.classList.remove('hidden');
-      statusConfigured.classList.remove('hidden');
-      form.reset();
-    } else {
-      errEl.textContent = res.message || 'Setup fail.';
+    try {
+      const fd = new FormData(form);
+      const key = fd.get('setupKey');
+      const user = fd.get('username');
+      const pass = fd.get('password');
+      const pass2 = fd.get('passwordConfirm');
+      if (String(pass) !== String(pass2)) {
+        errEl.textContent = 'Passwords do not match.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      const res = await HostelAuth.completeAdminSetup(key, user, pass);
+      if (res.ok) {
+        okEl.textContent = 'Admin account saved. You can sign in from admin.html.';
+        okEl.classList.remove('hidden');
+        statusConfigured.classList.remove('hidden');
+        sessionStorage.setItem(HostelAuth.AUTH_SESSION_KEY, '1');
+        window.location.href = 'admin.html';
+      } else {
+        errEl.textContent = res.message || 'Setup fail.';
+        errEl.classList.remove('hidden');
+      }
+    } catch (err) {
+      errEl.textContent = err && err.message ? err.message : 'Setup failed unexpectedly.';
       errEl.classList.remove('hidden');
     }
   });
